@@ -5,10 +5,12 @@ import '../services/api_service.dart';
 
 class AddSensorScreen extends StatefulWidget {
   final ApiService apiService;
+  final String? initialDeviceId; // ID устройства, через которое зашли в меню
 
   const AddSensorScreen({
     super.key,
     required this.apiService,
+    this.initialDeviceId,
   });
 
   @override
@@ -55,7 +57,16 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
       setState(() {
         _devices = devices;
         if (devices.isNotEmpty && _selectedDeviceId == null) {
-          _selectedDeviceId = devices.first.deviceId;
+          // Если передан initialDeviceId, используем его, иначе первое устройство
+          if (widget.initialDeviceId != null) {
+            final foundDevice = devices.firstWhere(
+              (device) => device.deviceId == widget.initialDeviceId,
+              orElse: () => devices.first,
+            );
+            _selectedDeviceId = foundDevice.deviceId;
+          } else {
+            _selectedDeviceId = devices.first.deviceId;
+          }
         }
       });
     } catch (e) {
@@ -127,8 +138,16 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Добавить датчик'),
+        elevation: 0,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: Text(
+          'Добавить датчик',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -138,7 +157,8 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
-                elevation: 2,
+                elevation: 4,
+                color: Theme.of(context).cardColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -149,11 +169,26 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.sensors,
-                            color: Theme.of(context).colorScheme.primary,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color(0xFF0d6efd),
+                                  Color(0xFF8a2be2),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.sensors,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 12),
                           Text(
                             'Параметры датчика',
                             style: TextStyle(
@@ -227,24 +262,32 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
                               ? Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange.shade50,
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.orange.shade900.withOpacity(0.3)
+                                        : Colors.orange.shade50,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.orange.shade200,
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.orange.shade700
+                                          : Colors.orange.shade200,
                                     ),
                                   ),
                                   child: Row(
                                     children: [
                                       Icon(
                                         Icons.info_outline,
-                                        color: Colors.orange.shade700,
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.orange.shade400
+                                            : Colors.orange.shade700,
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
                                           'Нет зарегистрированных устройств. Устройство автоматически зарегистрируется при первом подключении.',
                                           style: TextStyle(
-                                            color: Colors.orange.shade700,
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? Colors.orange.shade400
+                                                : Colors.orange.shade700,
                                             fontSize: 14,
                                           ),
                                         ),
@@ -264,6 +307,7 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
                                     fillColor: Theme.of(context).colorScheme.surface,
                                   ),
                                   items: _devices.map((device) {
+                                    final deviceName = device.name ?? device.deviceId;
                                     return DropdownMenuItem(
                                       value: device.deviceId,
                                       child: Row(
@@ -272,12 +316,14 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
                                           Icon(
                                             Icons.router,
                                             size: 20,
-                                            color: Colors.grey.shade600,
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? const Color(0xFFb0b0b0)
+                                                : Colors.grey.shade600,
                                           ),
                                           const SizedBox(width: 12),
                                           Flexible(
                                             child: Text(
-                                              '${device.deviceId} (${device.deviceType})',
+                                              deviceName,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
@@ -359,7 +405,7 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              FilledButton.icon(
+              ElevatedButton.icon(
                 onPressed: _isLoading ? null : _saveSensor,
                 icon: _isLoading
                     ? const SizedBox(
@@ -372,7 +418,9 @@ class _AddSensorScreenState extends State<AddSensorScreen> {
                       )
                     : const Icon(Icons.save),
                 label: Text(_isLoading ? 'Сохранение...' : 'Сохранить'),
-                style: FilledButton.styleFrom(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8a2be2),
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

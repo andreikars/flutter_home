@@ -5,6 +5,7 @@ import '../models/device.dart';
 import 'settings_screen.dart';
 import 'device_sensors_screen.dart';
 import 'all_sensors_screen.dart';
+import 'scenarios_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final ApiService apiService;
@@ -601,6 +602,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildHomeContent(),
           AllSensorsScreen(apiService: widget.apiService),
+          ScenariosScreen(apiService: widget.apiService),
         ],
       ),
       bottomNavigationBar: Container(
@@ -644,6 +646,11 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.sensors_outlined),
               activeIcon: Icon(Icons.sensors),
               label: 'Все датчики',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.auto_awesome_outlined),
+              activeIcon: Icon(Icons.auto_awesome),
+              label: 'Сценарии',
             ),
           ],
         ),

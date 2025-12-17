@@ -470,6 +470,7 @@ class _DeviceSensorsScreenState extends State<DeviceSensorsScreen> {
             MaterialPageRoute(
               builder: (context) => AddSensorScreen(
                 apiService: widget.apiService,
+                initialDeviceId: widget.device.deviceId, // Передаем ID текущего устройства
               ),
             ),
           );
